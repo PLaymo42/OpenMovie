@@ -22,7 +22,7 @@ struct CircleView: View {
 
             Text("\(value)")
                 .font(.caption)
-                .color(.gray)
+                .foregroundColor(.gray)
                 .minimumScaleFactor(0.1)
                 .padding(6)
         }

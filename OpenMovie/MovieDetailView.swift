@@ -18,19 +18,22 @@ struct MovieDetailView : View {
 
     @ObjectBinding var movie: Movie
 
-    private let backdropsWidth: CGFloat = UIScreen.main.bounds.width * 2/3
+    @State private var modalImagePath: ImageInfo? = nil
 
     var body: some View {
         NavigationView {
             List {
                 LoadableImage(imageLoader: ImageLoader(path: movie.backdropPath))
+                    .frame(width: UIScreen.main.bounds.width)
                     .listRowInsets(EdgeInsets())
 
-                Image(systemName: self.movie.isFavorite ? "star.fill" : "star")
-                    .foregroundColor(.yellow)
-                    .tapAction { self.movie.isFavorite.toggle() }
+                HStack {
+                    Image(systemName: self.movie.isFavorite ? "star.fill" : "star")
+                        .foregroundColor(.yellow)
+                        .tapAction { self.movie.isFavorite.toggle() }
 
-                Text(self.movie.title ?? "")
+                    Text(self.movie.title ?? "")
+                }
 
                 self.movie.detail.map {
                     ViewBuilder.buildEither(first:
@@ -42,7 +45,8 @@ struct MovieDetailView : View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
-                        ForEach(((movie.images?.posters?.allObjects as? [ImageInfo]) ?? []).identified(by: \.id)) { info in
+
+                        ForEach(movie.images?.posters?.allObjects as? [ImageInfo] ?? [], id: \.id) { info in
                             LoadableImage(imageLoader: ImageLoader(path: info.filePath))
                                 .posterStyle()
                                 .frame(width: 100, height: 100 / CGFloat(info.aspectRatio))
@@ -51,23 +55,22 @@ struct MovieDetailView : View {
                     .padding()
                 }
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(((movie.images?.backdrops?.allObjects as? [ImageInfo]) ?? []).identified(by: \.id)) { info in
-                            LoadableImage(imageLoader: ImageLoader(path: info.filePath))
-                                .posterStyle()
-                                .frame(width: self.backdropsWidth, height: self.backdropsWidth / CGFloat(info.aspectRatio))
-                        }
-                    }
-                    .padding()
+                LoadableCarousselView(backdropsPath: self.backdropsPath) { path in
+                    self.modalImagePath = path
                 }
             }
-            .edgesIgnoringSafeArea(.top)
+            //            .edgesIgnoringSafeArea(.top)
         }
         .onAppear(perform: self.load)
-
+        .sheet(item: $modalImagePath) { info in
+            return FullScreenImageView(imageInfo: info)
+        }
     }
 
+
+    var backdropsPath: [ImageInfo] {
+        return (self.movie.images?.backdrops?.allObjects as? [ImageInfo] ?? [])
+    }
 
     func load() {
         self.loadDetail()
@@ -82,10 +85,13 @@ struct MovieDetailView : View {
         _ = self.datasource
             .publisher(for: .detail(id))
             .receive(on: RunLoop.main)
-            .sink(receiveValue: { _ in })
+            .sink(receiveCompletion: { _ in },
+                  receiveValue: { _ in })
     }
 
     private func loadImages() {
+        guard self.movie.images == nil else { return }
+
         let id = Int(self.movie.id)
 
         _ = self.movieImageDatasource
@@ -93,8 +99,8 @@ struct MovieDetailView : View {
             .receive(on: RunLoop.main)
             .catch { error in
                 return Just(nil)
-            }
-            .sink(receiveValue: { _ in })
+        }
+        .sink(receiveValue: { _ in })
     }
 }
 
@@ -105,3 +111,25 @@ struct MovieDetailView : View {
 //    }
 //}
 //#endif
+
+struct LoadableCarousselView : View {
+
+    private let backdropsWidth: CGFloat = UIScreen.main.bounds.width * 2/3
+
+    let backdropsPath: [ImageInfo]
+    let imageTapAction: ((ImageInfo) -> Void)
+
+    var body: some View {
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 16) {
+                ForEach(self.backdropsPath, id: \.id) { info in
+                    LoadableImage(imageLoader: ImageLoader(path: info.filePath))
+                        .posterStyle()
+                        .frame(width: self.backdropsWidth)
+                        .tapAction { self.imageTapAction(info) }
+                }
+            }
+            .padding()
+        }
+    }
+}

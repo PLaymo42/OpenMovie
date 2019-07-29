@@ -42,7 +42,6 @@ public final class MovieImage: NSManagedObject, CoreDataDecodable, FindOrCreatab
             throw DataDecodingError.malformedJSON
         }
 
-
         let image = try MovieImage.getOrCreate(id: id, in: context)
 
         image.id = id

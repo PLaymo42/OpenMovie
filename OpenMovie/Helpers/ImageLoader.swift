@@ -13,30 +13,44 @@ import Combine
 final class ImageLoader: BindableObject {
 
     private let path: String?
+    private let size: ImageService.Size
     private let service: ImageService
 
     private var cancellable: AnyCancellable?
 
-    let didChange = PassthroughSubject<UIImage?, Never>()
+    let willChange = PassthroughSubject<Void, Never>()
+
+    var isLoading: Bool = false
 
     private(set) var image: UIImage? = nil {
-        didSet {
-            self.didChange.send(self.image)
+        willSet {
+            self.isLoading = false
+            self.willChange.send()
         }
     }
 
-    init(path: String?, service: ImageService = .shared) {
+
+    init(path: String?,
+         size: ImageService.Size = .medium,
+         service: ImageService = .shared) {
         self.path = path
+        self.size = size
         self.service = service
     }
 
     func loadImage() {
 
-        guard let path = path else { image = nil; return }
+        guard let path = self.path else { return }
 
-        self.cancellable = self.service.image(poster: path, size: .medium)
+        self.isLoading = true
+
+        self.cancellable = self.service.image(
+            poster: path,
+            size: size
+        )
             .catch { _ in Just(nil) }
             .receive(on: RunLoop.main)
             .assign(to: \.image, on: self)
     }
+
 }

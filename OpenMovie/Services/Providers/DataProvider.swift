@@ -26,7 +26,8 @@ class DataProvider<U> where U: API {
 
         return session
             .dataTaskPublisher(for: target.url)
-            .publisher(for: \.data)
+//            .publisher(for: \.data)
+            .map { $0.data }
             .receive(on: RunLoop.main)
             .decode(type: T.self, decoder: decoder, keyPath: target.keyPath)
     }

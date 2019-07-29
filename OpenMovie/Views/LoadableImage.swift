@@ -9,23 +9,34 @@
 import SwiftUI
 
 struct LoadableImage: View {
+
     @State var imageLoader: ImageLoader
 
     var body: some View {
         ZStack {
-            self.imageLoader.image.map {
-                ViewBuilder.buildEither(first:
-                    Image(uiImage: $0)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .animation(.basic())
-                )
-                } ?? ViewBuilder.buildEither(second:
-                    Rectangle()
-                        .foregroundColor(.gray)
-                        .opacity(0.1)
-            )
-        }.onAppear(perform: self.imageLoader.loadImage)
+            self.imageLoader.image
+                .map { ViewBuilder.buildEither(first: self.imageView(uiImage: $0)) } ??
+                ViewBuilder.buildEither(second: self.loadingView)
+        }.onAppear(perform: {
+            self.imageLoader.loadImage()
+        })
+    }
+
+    private func imageView(uiImage: UIImage) -> some View {
+        return Image(uiImage: uiImage)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .animation(.easeInOut)
+    }
+
+    private var loadingView: some View {
+        return ZStack {
+            Rectangle()
+                .foregroundColor(.gray)
+                .opacity(0.1)
+
+            ActivityIndicator(isAnimating: $imageLoader.isLoading, style: .large)
+        }
     }
 }
 

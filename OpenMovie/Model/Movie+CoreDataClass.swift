@@ -14,7 +14,7 @@ import Combine
 
 
 @objc(Movie)
-public final class Movie: NSManagedObject, BindableObject, CoreDataDecodable, FindOrCreatable {
+public final class Movie: NSManagedObject, Identifiable, CoreDataDecodable, FindOrCreatable {
 
     enum CodingKeys: String, CodingKey {
         case voteAverage = "vote_average"
@@ -29,15 +29,11 @@ public final class Movie: NSManagedObject, BindableObject, CoreDataDecodable, Fi
         case voteCount = "vote_count"
         case hasVideo = "video"
     }
-
-    public let willChange = PassthroughSubject<Void, Never>()
-
-    public override func willChangeValue(forKey key: String) {
+    
+    override public func willChangeValue(forKey key: String) {
         super.willChangeValue(forKey: key)
-        DispatchQueue.main.async {
-            self.willChange.send(())
-        }
-    }
+        self.objectWillChange.send()
+    } 
 
     func getOrCreate(context: NSManagedObjectContext) -> Movie? {
         return try? Movie.findFirst(in: context, with: NSPredicate(format: "id == %i", self.id))

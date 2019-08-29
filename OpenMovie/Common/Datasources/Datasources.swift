@@ -36,6 +36,8 @@ class SingleResultDataSource<U, T> where U: API, T: CoreDataDecodable, T: Fetcha
 
         return Publishers.Merge(coreDataPublisher, requestPublisher)
             .eraseToAnyPublisher()
+        
+        return requestPublisher.eraseToAnyPublisher()
     }
 }
 
@@ -66,7 +68,7 @@ class DataSource<U, T> where U: API, T: CoreDataDecodable, T: Fetchable {
 
         let requestPublisher: AnyPublisher<[T], Error> = self.requestProvider.fetchData(target: target)
 
-
+        return requestPublisher.eraseToAnyPublisher()
 
         return Publishers.Merge(coreDataPublisher, requestPublisher)
             .eraseToAnyPublisher()

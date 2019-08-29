@@ -2,7 +2,7 @@
 //  ImageInfo+CoreDataProperties.swift
 //  OpenMovie
 //
-//  Created by Anthony Soulier on 14/07/2019.
+//  Created by Anthony Soulier on 29/08/2019.
 //  Copyright © 2019 Anthony Soulier. All rights reserved.
 //
 //

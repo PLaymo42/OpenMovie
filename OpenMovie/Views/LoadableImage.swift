@@ -10,12 +10,15 @@ import SwiftUI
 
 struct LoadableImage: View {
 
-    @State var imageLoader: ImageLoader
+    @ObservedObject var imageLoader: ImageLoader
 
     var body: some View {
         ZStack {
             self.imageLoader.image
-                .map { ViewBuilder.buildEither(first: self.imageView(uiImage: $0)) } ??
+                .map {
+                    ViewBuilder.buildEither(first: self.imageView(uiImage: $0))
+
+                } ??
                 ViewBuilder.buildEither(second: self.loadingView)
         }.onAppear(perform: {
             self.imageLoader.loadImage()
@@ -51,7 +54,7 @@ struct PosterStyle: ViewModifier {
 
 extension Poster {
     func posterStyle() -> some View {
-        return Modified(
+        return ModifiedContent(
             content: self,
             modifier: PosterStyle()
         )

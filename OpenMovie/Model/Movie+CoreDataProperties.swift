@@ -2,7 +2,7 @@
 //  Movie+CoreDataProperties.swift
 //  OpenMovie
 //
-//  Created by Anthony Soulier on 15/07/2019.
+//  Created by Anthony Soulier on 29/08/2019.
 //  Copyright © 2019 Anthony Soulier. All rights reserved.
 //
 //
@@ -17,6 +17,7 @@ extension Movie {
         return NSFetchRequest<Movie>(entityName: "Movie")
     }
 
+    @NSManaged public var backdropPath: String?
     @NSManaged public var hasVideo: Bool
     @NSManaged public var id: Int64
     @NSManaged public var isFavorite: Bool
@@ -28,7 +29,6 @@ extension Movie {
     @NSManaged public var title: String?
     @NSManaged public var voteAverage: Float
     @NSManaged public var voteCount: Int64
-    @NSManaged public var backdropPath: String?
     @NSManaged public var detail: MovieDetail?
     @NSManaged public var images: MovieImage?
 

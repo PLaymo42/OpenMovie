@@ -2,7 +2,7 @@
 //  MovieImage+CoreDataProperties.swift
 //  OpenMovie
 //
-//  Created by Anthony Soulier on 14/07/2019.
+//  Created by Anthony Soulier on 29/08/2019.
 //  Copyright © 2019 Anthony Soulier. All rights reserved.
 //
 //
@@ -19,8 +19,8 @@ extension MovieImage {
 
     @NSManaged public var id: Int64
     @NSManaged public var backdrops: NSSet?
-    @NSManaged public var posters: NSSet?
     @NSManaged public var movie: Movie?
+    @NSManaged public var posters: NSSet?
 
 }
 

@@ -10,25 +10,17 @@ import SwiftUI
 import UIKit
 import Combine
 
-final class ImageLoader: BindableObject {
-
+final class ImageLoader: ObservableObject {
+    
     private let path: String?
     private let size: ImageService.Size
     private let service: ImageService
 
     private var cancellable: AnyCancellable?
 
-    let willChange = PassthroughSubject<Void, Never>()
-
     var isLoading: Bool = false
 
-    private(set) var image: UIImage? = nil {
-        willSet {
-            self.isLoading = false
-            self.willChange.send()
-        }
-    }
-
+    @Published var image: UIImage? = nil
 
     init(path: String?,
          size: ImageService.Size = .medium,
@@ -36,20 +28,24 @@ final class ImageLoader: BindableObject {
         self.path = path
         self.size = size
         self.service = service
+        
+        if let path = path {
+            self.image = service.fromCache(poster: path, size: size)
+        }
     }
 
     func loadImage() {
 
-        guard let path = self.path else { return }
+        guard let path = self.path, self.image == nil else { return }
 
-        self.isLoading = true
+//        self.isLoading = true
 
         self.cancellable = self.service.image(
             poster: path,
             size: size
         )
             .catch { _ in Just(nil) }
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .assign(to: \.image, on: self)
     }
 

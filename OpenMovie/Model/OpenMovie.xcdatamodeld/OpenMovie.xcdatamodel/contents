@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14877.5" systemVersion="19A512f" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="ImageInfo" representedClassName="ImageInfo" syncable="YES" codeGenerationType="class">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14897.2" systemVersion="19A546d" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="ImageInfo" representedClassName="ImageInfo" syncable="YES">
         <attribute name="aspectRatio" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="filePath" optional="YES" attributeType="String"/>
         <attribute name="height" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="width" optional="YES" attributeType="Integer 16" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <relationship name="backdrop" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ImageInfo" inverseName="backdrop" inverseEntity="ImageInfo"/>
-        <relationship name="poster" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ImageInfo" inverseName="poster" inverseEntity="ImageInfo"/>
+        <relationship name="backdrop" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MovieImage" inverseName="backdrops" inverseEntity="MovieImage"/>
+        <relationship name="poster" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MovieImage" inverseName="posters" inverseEntity="MovieImage"/>
     </entity>
     <entity name="Movie" representedClassName="Movie" syncable="YES" codeGenerationType="category">
         <attribute name="backdropPath" optional="YES" attributeType="String"/>
@@ -22,18 +22,18 @@
         <attribute name="voteAverage" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="voteCount" optional="YES" attributeType="Integer 64" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="detail" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="MovieDetail" inverseName="movie" inverseEntity="MovieDetail"/>
-        <relationship name="images" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MovieImage" inverseName="movie" inverseEntity="MovieImage"/>
+        <relationship name="images" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="MovieImage" inverseName="movie" inverseEntity="MovieImage"/>
     </entity>
-    <entity name="MovieDetail" representedClassName="MovieDetail" syncable="YES" codeGenerationType="class">
+    <entity name="MovieDetail" representedClassName="MovieDetail" syncable="YES" codeGenerationType="category">
         <attribute name="budget" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="movie" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Movie" inverseName="detail" inverseEntity="Movie"/>
     </entity>
-    <entity name="MovieImage" representedClassName="MovieImage" syncable="YES" codeGenerationType="class">
+    <entity name="MovieImage" representedClassName="MovieImage" syncable="YES" codeGenerationType="category">
         <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="backdrops" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ImageInfo"/>
+        <relationship name="backdrops" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ImageInfo" inverseName="backdrop" inverseEntity="ImageInfo"/>
         <relationship name="movie" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Movie" inverseName="images" inverseEntity="Movie"/>
-        <relationship name="posters" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ImageInfo"/>
+        <relationship name="posters" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ImageInfo" inverseName="poster" inverseEntity="ImageInfo"/>
     </entity>
     <elements>
         <element name="ImageInfo" positionX="-45" positionY="90" width="128" height="133"/>

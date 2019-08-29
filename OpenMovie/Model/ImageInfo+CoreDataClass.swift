@@ -41,4 +41,7 @@ public final class ImageInfo: NSManagedObject, CoreDataDecodable, FindOrCreatabl
         return info
     }
 
+    var ratio: CGFloat {
+        return CGFloat(height) / CGFloat(width)
+    }
 }

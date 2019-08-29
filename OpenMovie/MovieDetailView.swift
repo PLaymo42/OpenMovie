@@ -16,7 +16,7 @@ struct MovieDetailView : View {
 
     private let movieImageDatasource = SingleResultDataSource<MovieApi, MovieImage>()
 
-    @ObjectBinding var movie: Movie
+    @ObservedObject var movie: Movie
 
     @State private var modalImagePath: ImageInfo? = nil
 
@@ -30,7 +30,7 @@ struct MovieDetailView : View {
                 HStack {
                     Image(systemName: self.movie.isFavorite ? "star.fill" : "star")
                         .foregroundColor(.yellow)
-                        .tapAction { self.movie.isFavorite.toggle() }
+                        .onTapGesture { self.movie.isFavorite.toggle() }
 
                     Text(self.movie.title ?? "")
                 }
@@ -42,22 +42,18 @@ struct MovieDetailView : View {
                     } ?? ViewBuilder.buildEither(second:
                         Text("budget unknown")
                 )
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-
-                        ForEach(movie.images?.posters?.allObjects as? [ImageInfo] ?? [], id: \.id) { info in
-                            LoadableImage(imageLoader: ImageLoader(path: info.filePath))
-                                .posterStyle()
-                                .frame(width: 100, height: 100 / CGFloat(info.aspectRatio))
-                        }
-                    }
-                    .padding()
-                }
-
-                LoadableCarousselView(backdropsPath: self.backdropsPath) { path in
-                    self.modalImagePath = path
-                }
+                
+                LoadableCarousselView(
+                    imageInfos: self.posterPath,
+                    imageWidth: 100,
+                    imageTapAction: { self.modalImagePath = $0 }
+                )
+                
+                LoadableCarousselView(
+                    imageInfos: self.backdropsPath,
+                    imageWidth: UIScreen.main.bounds.width * 2/3,
+                    imageTapAction: { self.modalImagePath = $0 }
+                )
             }
             //            .edgesIgnoringSafeArea(.top)
         }
@@ -70,6 +66,10 @@ struct MovieDetailView : View {
 
     var backdropsPath: [ImageInfo] {
         return (self.movie.images?.backdrops?.allObjects as? [ImageInfo] ?? [])
+    }
+
+    var posterPath: [ImageInfo] {
+        return (self.movie.images?.posters?.allObjects as? [ImageInfo] ?? [])
     }
 
     func load() {
@@ -85,8 +85,8 @@ struct MovieDetailView : View {
         _ = self.datasource
             .publisher(for: .detail(id))
             .receive(on: RunLoop.main)
-            .sink(receiveCompletion: { _ in },
-                  receiveValue: { _ in })
+            .catch { _ in Just(nil) }
+            .sink(receiveValue: { _ in  })
     }
 
     private func loadImages() {
@@ -97,10 +97,8 @@ struct MovieDetailView : View {
         _ = self.movieImageDatasource
             .publisher(for: .images(id))
             .receive(on: RunLoop.main)
-            .catch { error in
-                return Just(nil)
-        }
-        .sink(receiveValue: { _ in })
+            .catch { _ in Just(nil) }
+            .sink(receiveValue: { _ in })
     }
 }
 
@@ -114,22 +112,25 @@ struct MovieDetailView : View {
 
 struct LoadableCarousselView : View {
 
-    private let backdropsWidth: CGFloat = UIScreen.main.bounds.width * 2/3
-
-    let backdropsPath: [ImageInfo]
+    let imageInfos: [ImageInfo]
+    let imageWidth: CGFloat
     let imageTapAction: ((ImageInfo) -> Void)
 
     var body: some View {
         return ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 16) {
-                ForEach(self.backdropsPath, id: \.id) { info in
+                ForEach(self.imageInfos, id: \.id) { info in
                     LoadableImage(imageLoader: ImageLoader(path: info.filePath))
                         .posterStyle()
-                        .frame(width: self.backdropsWidth)
-                        .tapAction { self.imageTapAction(info) }
+                        .frame(width: self.imageWidth, height: self.imageHeight)
+                        .onTapGesture { self.imageTapAction(info) }
                 }
             }
             .padding()
         }
+    }
+    
+    private var imageHeight: CGFloat {
+        return imageInfos.map { self.imageWidth * $0.ratio }.min() ?? 0
     }
 }

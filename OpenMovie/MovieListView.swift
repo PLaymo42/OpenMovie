@@ -10,33 +10,27 @@ import SwiftUI
 import Combine
 import CoreData
 
-class MoviesViewModel: BindableObject {
-
-    public let willChange = PassthroughSubject<MoviesViewModel, Never>()
+class MoviesViewModel: ObservableObject {
 
     private let datasource = DataSource<MovieApi, Movie>(sortDescriptor: [
         NSSortDescriptor(key: "releaseDate", ascending: false),
         NSSortDescriptor(key: "title", ascending: true)
     ])
 
-    var movies: [Movie] = [] {
-        willSet {
-            self.willChange.send(self)
-        }
-    }
+    @Published var movies: [Movie] = []
 
     func load() {
         _ = self.datasource
             .publisher(for: .currentlyInTheater)
             .catch { error in return Just([]) }
             .receive(on: RunLoop.main)
-            .sink(receiveValue: { (value: [Movie]) in self.movies = value })
+            .sink(receiveValue: { self.movies = $0 })
     }
 }
 
 struct MovieListView : View {
 
-    @ObjectBinding var viewModel = MoviesViewModel()
+    @ObservedObject var viewModel = MoviesViewModel()
 
     var body: some View {
         NavigationView {
@@ -60,7 +54,7 @@ struct MovieListView_Previews : PreviewProvider {
 
 private struct MovieCell: View {
 
-    @ObjectBinding var movie: Movie
+    @ObservedObject var movie: Movie
 
     var body: some View {
         HStack(spacing: 16) {
@@ -74,7 +68,7 @@ private struct MovieCell: View {
                 HStack {
                     Image(systemName: movie.isFavorite ? "star.fill" : "star")
                         .foregroundColor(.yellow)
-                        .tapAction { self.movie.isFavorite.toggle() }
+                        .onTapGesture { self.movie.isFavorite.toggle() }
 
                     Text(movie.title ?? "")
                         .foregroundColor(.yellow)
@@ -91,7 +85,6 @@ private struct MovieCell: View {
                 Text(movie.overview ?? "")
                     .font(.subheadline)
                     .foregroundColor(.gray)
-                    .lineLimit(0)
 
                 Spacer()
             }

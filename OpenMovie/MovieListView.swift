@@ -12,6 +12,9 @@ import CoreData
 
 class MoviesViewModel: ObservableObject {
 
+
+    private var cancellable = Set<AnyCancellable>()
+
     private let datasource = DataSource<MovieApi, Movie>(sortDescriptor: [
         NSSortDescriptor(key: "releaseDate", ascending: false),
         NSSortDescriptor(key: "title", ascending: true)
@@ -20,11 +23,12 @@ class MoviesViewModel: ObservableObject {
     @Published var movies: [Movie] = []
 
     func load() {
-        _ = self.datasource
+        self.datasource
             .publisher(for: .currentlyInTheater)
             .catch { error in return Just([]) }
             .receive(on: RunLoop.main)
             .sink(receiveValue: { self.movies = $0 })
+            .store(in: &cancellable)
     }
 }
 
@@ -71,6 +75,8 @@ private struct MovieCell: View {
                         .onTapGesture { self.movie.isFavorite.toggle() }
 
                     Text(movie.title ?? "")
+                        .lineLimit(2)
+
                         .foregroundColor(.yellow)
                         .font(.headline)
                 }
@@ -85,6 +91,7 @@ private struct MovieCell: View {
                 Text(movie.overview ?? "")
                     .font(.subheadline)
                     .foregroundColor(.gray)
+                    .lineLimit(6)
 
                 Spacer()
             }

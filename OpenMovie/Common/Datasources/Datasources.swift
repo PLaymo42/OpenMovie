@@ -63,12 +63,9 @@ class DataSource<U, T> where U: API, T: CoreDataDecodable, T: Fetchable {
         managedObjectContext: self.context
     )
 
-
     func publisher(for target: U) -> AnyPublisher<[T], Error> {
 
         let requestPublisher: AnyPublisher<[T], Error> = self.requestProvider.fetchData(target: target)
-
-        return requestPublisher.eraseToAnyPublisher()
 
         return Publishers.Merge(coreDataPublisher, requestPublisher)
             .eraseToAnyPublisher()
